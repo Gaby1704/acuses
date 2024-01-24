@@ -83,13 +83,19 @@ class _AddItemFormState extends State<AddItemForm> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Text(
+          '* Campos obligatorios',
+          style: TextStyle(
+          color: Colors.red,
+          ),
+        ),
         TextField(
           controller: _themeController,
           decoration: InputDecoration(
             labelText: 'Tema del Acuse',
             suffixIcon: Icon(
               MyFlutterApp.asterisk,
-              color: Color(0xFF572772),
+              color: Colors.red,
               size: 10.0,
             ),
           ),
@@ -99,8 +105,9 @@ class _AddItemFormState extends State<AddItemForm> {
           decoration: InputDecoration(
             labelText: 'Descripción del acuse',
             suffixIcon: Icon(
-              Icons.star_border_purple500_rounded,
-              color: Color(0xFF572772),
+              MyFlutterApp.asterisk,
+              color: Colors.red,
+              size: 10.0,
             ),
           ),
         ),
@@ -109,8 +116,9 @@ class _AddItemFormState extends State<AddItemForm> {
           decoration: InputDecoration(
             labelText: 'Persona Asignada',
             suffixIcon: Icon(
-              Icons.star_border_purple500_rounded,
-              color: Color(0xFF572772),
+              MyFlutterApp.asterisk,
+              color: Colors.red,
+              size: 10.0,
             ),
           ),
         ),
@@ -127,8 +135,9 @@ class _AddItemFormState extends State<AddItemForm> {
                     decoration: InputDecoration(
                       labelText: 'Fecha de creación',
                       suffixIcon: Icon(
-                        Icons.star_border_purple500_rounded,
-                        color: Color(0xFF572772),
+                        MyFlutterApp.asterisk,
+                        color: Colors.red,
+                        size: 10.0,
                       ),
                     ),
                   ),
@@ -149,10 +158,6 @@ class _AddItemFormState extends State<AddItemForm> {
                     ),
                     decoration: InputDecoration(
                       labelText: 'Fecha de liberación',
-                      suffixIcon: Icon(
-                        Icons.star_border_purple500_rounded,
-                        color: Color(0xFF572772),
-                      ),
                     ),
                   ),
                 ),
@@ -174,8 +179,9 @@ class _AddItemFormState extends State<AddItemForm> {
               child: Row(
                 children: [
                   Icon(
-                    Icons.star_border_purple500_rounded,
-                    color: Color(0xFF572772),
+                    MyFlutterApp.asterisk,
+                    color: Colors.red,
+                    size: 10.0,
                   ),
                   SizedBox(width: 10.0), // Espacio entre el icono y el texto
                   Text(value),
@@ -219,7 +225,6 @@ class _AddItemFormState extends State<AddItemForm> {
         SizedBox(height: 16.0),
         ElevatedButton(
           onPressed: () {
-            // Validate that the required fields are not empty
             if (_themeController.text.isNotEmpty &&
                 _assignedPersonController.text.isNotEmpty &&
                 _startDate != null) {
@@ -227,8 +232,7 @@ class _AddItemFormState extends State<AddItemForm> {
               String description = _descriptionController.text;
               String assignedPerson = _assignedPersonController.text;
               String startDate = _startDate.toLocal().toString().split(' ')[0];
-              String endDate =
-                  _endDate?.toLocal().toString().split(' ')[0] ?? '';
+              String endDate = _endDate?.toLocal().toString().split(' ')[0] ?? '';
               String status = _selectedStatus;
               String tracking = _trackingController.text;
               String comments = _commentsController.text;
@@ -237,17 +241,19 @@ class _AddItemFormState extends State<AddItemForm> {
               print('Descripción: $description');
               print('Persona Asignada: $assignedPerson');
               print('Fecha de Inicio: $startDate');
-
-              // Check if end date is provided before printing
-              if (_endDate != null) {
-                print('Fecha de Fin: $endDate');
-              } else {
-                print('Fecha de Fin: No especificada');
-              }
-
+              print('Fecha de Fin: $endDate');
               print('Estado: $status');
               print('Seguimiento: $tracking');
               print('Comentarios: $comments');
+
+              _themeController.clear();
+              _descriptionController.clear();
+              _assignedPersonController.clear();
+              _startDate = DateTime.now();
+              _endDate=null;
+              _selectedStatus='Pendiente';
+              _trackingController.clear();
+              _commentsController.clear();
             } else {
               Fluttertoast.showToast(
                 msg: "Por favor, completa todos los campos obligatorios",

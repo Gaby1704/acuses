@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
         ],
-        title: Text("Hola ${widget.userName}",
+        title: Text("¡Hola ${widget.userName}!",
             style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF572772),
         elevation: 0,
@@ -100,7 +100,6 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               children: [
                 SearchView(filterController: filterController, onFilter: _applyFilter),
-                // Agrega un botón o icono para limpiar el filtro si es necesario
               ],
             ),
           ),
@@ -177,7 +176,6 @@ class SearchView extends StatelessWidget {
             ),
           ),
         ),
-        // Agrega un botón o icono para limpiar el filtro si es necesario
       ],
     );
   }
