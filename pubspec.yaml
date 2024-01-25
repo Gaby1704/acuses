@@ -13,10 +13,14 @@ dependencies:
   fluttertoast: ^8.0.8
   http: ^0.13.3
   sqflite: ^2.0.0
-  path_provider: ^2.0.2
   intl: ^0.17.0
+  image_picker: ^0.8.4+4
+  pdf: ^3.6.0
+  path_provider: ^2.0.8
+  permission_handler: ^8.3.0
   shared_preferences: ^2.0.12
   cupertino_icons: ^1.0.2
+  file_picker: ^4.2.0
 
 dev_dependencies:
   flutter_test:

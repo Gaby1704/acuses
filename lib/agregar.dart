@@ -1,6 +1,12 @@
+import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:pdf/pdf.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
 
 class MyFlutterApp {
   MyFlutterApp._();
@@ -8,8 +14,10 @@ class MyFlutterApp {
   static const _kFontFam = 'MyFlutterApp';
   static const String? _kFontPkg = null;
 
-  static const IconData asterisk = IconData(0xf069, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData asterisk =
+      IconData(0xf069, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }
+
 class AddItemPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -18,16 +26,18 @@ class AddItemPage extends StatelessWidget {
         title: Text('Agregar Acuse', style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF572772),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/fondo2.png'),
-            fit: BoxFit.cover,
+      body: SingleChildScrollView(
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/fondo2.png'),
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: AddItemForm(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: AddItemForm(),
+          ),
         ),
       ),
     );
@@ -43,12 +53,13 @@ class _AddItemFormState extends State<AddItemForm> {
   final TextEditingController _themeController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _assignedPersonController =
-  TextEditingController();
+      TextEditingController();
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
   String _selectedStatus = 'Pendiente';
   final TextEditingController _trackingController = TextEditingController();
   final TextEditingController _commentsController = TextEditingController();
+  Uint8List? _capturedImageData;
 
   Future<void> _selectStartDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -64,6 +75,131 @@ class _AddItemFormState extends State<AddItemForm> {
     }
   }
 
+  Future<void> convertirAPdf(Uint8List imageData) async {
+    final pdf = pw.Document();
+    final image = pw.MemoryImage(imageData);
+
+    pdf.addPage(pw.Page(build: (pw.Context context) {
+      return pw.Center(child: pw.Image(image));
+    }));
+
+    try {
+      final directory = await getExternalStorageDirectory();
+      final file = File("${directory!.path}/DocumetosAcuses/imagen.pdf");
+      await file.create(recursive: true);
+      await file.writeAsBytes(await pdf.save());
+
+      Fluttertoast.showToast(
+        msg: 'PDF generado con éxito\nUbicación: ${file.path}',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+
+      print('PDF Guardado en ${file.path}');
+    } catch (e) {
+      print("Error al guardar PDF: $e");
+
+      Fluttertoast.showToast(
+        msg: 'Error al generar el PDF',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+  Future<void> _captureDocuments() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text('Seleccionar origen'),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'camera');
+              },
+              child: const Text('Tomar Foto'),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'gallery');
+              },
+              child: const Text('Elegir imagen de la Galería'),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'pdf');
+              },
+              child: const Text('Seleccionar PDF en almacenamiento interno'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == 'camera') {
+      _capturePhoto();
+    } else if (result == 'gallery') {
+      _pickImageFromGallery();
+    } else if (result == 'pdf') {
+      _pickPdfFromStorage();
+    }
+  }
+
+  Future<void> _capturePhoto() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      Uint8List bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _capturedImageData = bytes;
+      });
+      convertirAPdf(bytes);
+    } else {
+      print('No se seleccionó ninguna imagen.');
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      Uint8List bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _capturedImageData = bytes;
+      });
+      convertirAPdf(bytes);
+    } else {
+      print('No se seleccionó ninguna imagen.');
+    }
+  }
+
+  Future<void> _pickPdfFromStorage() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      Uint8List bytes = await file.readAsBytes();
+      setState(() {
+        _capturedImageData = bytes;
+      });
+      convertirAPdf(bytes);
+    } else {
+      print('No se seleccionó ningún archivo PDF.');
+    }
+  }
   Future<void> _selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -86,7 +222,7 @@ class _AddItemFormState extends State<AddItemForm> {
         Text(
           '* Campos obligatorios',
           style: TextStyle(
-          color: Colors.red,
+            color: Colors.red,
           ),
         ),
         TextField(
@@ -175,20 +311,21 @@ class _AddItemFormState extends State<AddItemForm> {
           items: ['Pendiente', 'En proceso', 'Terminado', 'Pausado']
               .map<DropdownMenuItem<String>>(
                 (String value) => DropdownMenuItem<String>(
-              value: value,
-              child: Row(
-                children: [
-                  Icon(
-                    MyFlutterApp.asterisk,
-                    color: Colors.red,
-                    size: 10.0,
+                  value: value,
+                  child: Row(
+                    children: [
+                      Icon(
+                        MyFlutterApp.asterisk,
+                        color: Colors.red,
+                        size: 10.0,
+                      ),
+                      SizedBox(
+                          width: 10.0), // Espacio entre el icono y el texto
+                      Text(value),
+                    ],
                   ),
-                  SizedBox(width: 10.0), // Espacio entre el icono y el texto
-                  Text(value),
-                ],
-              ),
-            ),
-          )
+                ),
+              )
               .toList(),
         ),
         TextField(
@@ -205,9 +342,7 @@ class _AddItemFormState extends State<AddItemForm> {
         ),
         SizedBox(height: 5.0),
         ElevatedButton(
-          onPressed: () {
-            // Coloca aquí la lógica para capturar documentos
-          },
+          onPressed: _captureDocuments,
           style: ElevatedButton.styleFrom(
             primary: Color(0xfff08018),
             shape: RoundedRectangleBorder(
@@ -232,7 +367,8 @@ class _AddItemFormState extends State<AddItemForm> {
               String description = _descriptionController.text;
               String assignedPerson = _assignedPersonController.text;
               String startDate = _startDate.toLocal().toString().split(' ')[0];
-              String endDate = _endDate?.toLocal().toString().split(' ')[0] ?? '';
+              String endDate =
+                  _endDate?.toLocal().toString().split(' ')[0] ?? '';
               String status = _selectedStatus;
               String tracking = _trackingController.text;
               String comments = _commentsController.text;
@@ -250,8 +386,8 @@ class _AddItemFormState extends State<AddItemForm> {
               _descriptionController.clear();
               _assignedPersonController.clear();
               _startDate = DateTime.now();
-              _endDate=null;
-              _selectedStatus='Pendiente';
+              _endDate = null;
+              _selectedStatus = 'Pendiente';
               _trackingController.clear();
               _commentsController.clear();
             } else {
