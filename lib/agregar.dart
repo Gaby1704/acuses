@@ -119,7 +119,7 @@ class _AddItemFormState extends State<AddItemForm> {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: Text('Seleccionar origen'),
+          title: Text('Seleccionar origen del documento'),
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () {
@@ -350,7 +350,7 @@ class _AddItemFormState extends State<AddItemForm> {
             ),
           ),
           child: Text(
-            'Capturar Documentos',
+            'Adjuntar Documentos',
             style: TextStyle(
               color: Colors.white,
               fontSize: 15.0,
