@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     var url =
-        Uri.parse('https://si-exactaa.septlaxcala.gob.mx/numet/login.php');
+        Uri.parse('https://pruebas.septlaxcala.gob.mx/app/loginP.php');
 
     var data = {
       'user': userController.text,

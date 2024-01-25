@@ -42,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void fetchDataFromWebService() async {
     final response = await http.get(
-        Uri.parse('https://si-exactaa.septlaxcala.gob.mx/numet/Fpruebas.php'));
+        Uri.parse('https://pruebas.septlaxcala.gob.mx/app/Fpruebas.php'));
 
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
