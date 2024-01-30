@@ -77,9 +77,7 @@ class _MyAppState extends State<MyApp> {
 
 class LoginScreen extends StatefulWidget {
   final Function(int, String) onLogin;
-
   LoginScreen({Key? key, required this.onLogin}) : super(key: key);
-
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }

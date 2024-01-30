@@ -10,7 +10,7 @@ class DetalleItemPage extends StatelessWidget {
   DetalleItemPage({required this.item});
 
   Future<Map<String, dynamic>> fetchDetailsFromWebService(String itemName) async {
-    final response = await http.get(Uri.parse('https://si-exactaa.septlaxcala.gob.mx/numet/Detalles.php?item=$itemName'));
+    final response = await http.get(Uri.parse('https://pruebas.septlaxcala.gob.mx/app/Degtalles.php?item=$itemName'));
 
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
