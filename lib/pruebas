@@ -1,0 +1,40 @@
+
+class AddItemPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Agregar Acuse', style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF572772),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/fondo2.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: AddItemForm(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AddItemForm extends StatefulWidget {
+  @override
+  _AddItemFormState createState() => _AddItemFormState();
+}
+
+class _AddItemFormState extends State<AddItemForm> {
+  // ... (Existing code for _AddItemFormState)
+
+
+
+  // ... (Existing code for _AddItemFormState)
+
+}
