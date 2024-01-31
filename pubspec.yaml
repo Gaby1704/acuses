@@ -38,5 +38,5 @@ flutter:
   assets:
     - assets/textura.jpg
     - assets/logo.png
-    - assets/fondo.png
+    - assets/fondoInicio.png
     - assets/fondo2.png

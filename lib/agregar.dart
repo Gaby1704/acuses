@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:pdf/pdf.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 
@@ -61,6 +63,72 @@ class _AddItemFormState extends State<AddItemForm> {
   final TextEditingController _commentsController = TextEditingController();
   Uint8List? _capturedImageData;
 
+  Future<void> _saveDataToServer({
+    required String theme,
+    required String description,
+    required String assignedPerson,
+    required String startDate,
+    required String endDate,
+    required String tracking,
+    required String comments,
+    required String status,
+    Uint8List? imageData,
+  }) async {
+    String statusText = status ?? 'Pendiente'; // Use the selected status
+
+    try {
+      String base64Image = '';
+      if (imageData != null) {
+        base64Image = base64Encode(imageData);
+      }
+      var response = await http.post(
+        Uri.parse('https://pruebas.septlaxcala.gob.mx/app/envio.php'),
+        body: {
+          'tema': theme,
+          'descripcion': description,
+          'name': assignedPerson,
+          'fechaI': startDate,
+          'fechaF': endDate,
+          'status': status,  // Use the selected status
+          'seguimiento': tracking,
+          'comentario': comments,
+          'fecha': DateTime.now().toString(),
+          'idUser': '1',
+          'archivo': base64Image,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data['success']) {
+          Fluttertoast.showToast(
+            msg: data['message'],
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        } else {
+          Fluttertoast.showToast(
+            msg: data['message'],
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
+      } else {
+        print('HTTP Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
   Future<void> _selectStartDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -114,6 +182,7 @@ class _AddItemFormState extends State<AddItemForm> {
       );
     }
   }
+
   Future<void> _captureDocuments() async {
     final result = await showDialog<String>(
       context: context,
@@ -200,6 +269,7 @@ class _AddItemFormState extends State<AddItemForm> {
       print('No se seleccionó ningún archivo PDF.');
     }
   }
+
   Future<void> _selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -369,18 +439,21 @@ class _AddItemFormState extends State<AddItemForm> {
               String startDate = _startDate.toLocal().toString().split(' ')[0];
               String endDate =
                   _endDate?.toLocal().toString().split(' ')[0] ?? '';
-              String status = _selectedStatus;
+              String status = _selectedStatus ?? 'Pendiente';
               String tracking = _trackingController.text;
               String comments = _commentsController.text;
 
-              print('Tema: $theme');
-              print('Descripción: $description');
-              print('Persona Asignada: $assignedPerson');
-              print('Fecha de Inicio: $startDate');
-              print('Fecha de Fin: $endDate');
-              print('Estado: $status');
-              print('Seguimiento: $tracking');
-              print('Comentarios: $comments');
+              _saveDataToServer(
+                theme: theme,
+                description: description,
+                assignedPerson: assignedPerson,
+                startDate: startDate,
+                endDate: endDate,
+                status: status,
+                tracking: tracking,
+                comments: comments,
+                imageData: _capturedImageData,
+              );
 
               _themeController.clear();
               _descriptionController.clear();
@@ -419,4 +492,10 @@ class _AddItemFormState extends State<AddItemForm> {
       ],
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: AddItemPage(),
+  ));
 }

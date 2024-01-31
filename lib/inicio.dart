@@ -41,14 +41,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void fetchDataFromWebService() async {
-    final response = await http.get(
-        Uri.parse('https://pruebas.septlaxcala.gob.mx/app/Fpruebas.php'));
+    final response = await http
+        .get(Uri.parse('https://pruebas.septlaxcala.gob.mx/app/Fpruebas.php'));
 
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
         setState(() {
           items =
-          List<String>.from(json.decode(utf8.decode(response.bodyBytes)));
+              List<String>.from(json.decode(utf8.decode(response.bodyBytes)));
           filteredItems = List.from(items);
         });
       } else {
@@ -68,9 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _applyFilter() {
     String filter = filterController.text.toLowerCase();
     setState(() {
-      filteredItems = items
-          .where((item) => item.toLowerCase().contains(filter))
-          .toList();
+      filteredItems =
+          items.where((item) => item.toLowerCase().contains(filter)).toList();
     });
   }
 
@@ -93,46 +92,57 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Color(0xFF572772),
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                SearchView(filterController: filterController, onFilter: _applyFilter),
-              ],
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(
+                "assets/fondoInicio.png"), // Replace with your image asset path
+            fit: BoxFit.cover,
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredItems.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            DetalleItemPage(item: filteredItems[index]),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  SearchView(
+                      filterController: filterController,
+                      onFilter: _applyFilter),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DetalleItemPage(item: filteredItems[index]),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.check_circle_outline,
+                        color: Color(0xFF572772),
                       ),
-                    );
-                  },
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.check_circle_outline,
-                      color: Color(0xFF572772),
+                      title: Text(_capitalizeFirstLetter(filteredItems[index])),
+                      trailing: Icon(
+                        Icons.arrow_forward_ios,
+                        color: Color(0xFF572772),
+                      ),
                     ),
-                    title: Text(_capitalizeFirstLetter(filteredItems[index])),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      color: Color(0xFF572772),
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -143,7 +153,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           );
         },
-        child: Icon(Icons.add,
+        child: Icon(
+          Icons.add,
           color: Color(0xFFffffff),
         ),
         backgroundColor: Color(0xFF572772),
@@ -187,6 +198,7 @@ void _logout(BuildContext context) async {
 
   Navigator.pushReplacement(
     context,
-    MaterialPageRoute(builder: (context) => LoginScreen(onLogin: (userId, userName) {})),
+    MaterialPageRoute(
+        builder: (context) => LoginScreen(onLogin: (userId, userName) {})),
   );
 }
