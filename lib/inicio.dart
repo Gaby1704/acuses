@@ -9,8 +9,9 @@ import 'main.dart';
 
 class InterInicio extends StatelessWidget {
   final String userName;
+  final int? userId;
 
-  InterInicio({required this.userName, int? userId});
+  InterInicio({required this.userName, this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +23,9 @@ class InterInicio extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   final String userName;
+  final int? userId;
 
-  MyHomePage({required this.userName});
+  MyHomePage({required this.userName, this.userId});
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -50,6 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
           items =
               List<String>.from(json.decode(utf8.decode(response.bodyBytes)));
           filteredItems = List.from(items);
+          print(UserIdSingleton.userName);
+          print(UserIdSingleton.userId);
         });
       } else {
         print('Respuesta del servidor vacía.');
