@@ -153,7 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddItemPage(),
+              builder: (context) => AddItemPage(userId: UserIdSingleton.userId, userName: UserIdSingleton.userName,),
             ),
           );
         },

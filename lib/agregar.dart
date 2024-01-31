@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
+import 'package:acuses/main.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +22,9 @@ class MyFlutterApp {
 }
 
 class AddItemPage extends StatelessWidget {
+  final String userName;
+  final int? userId;
+  AddItemPage({required this.userId, required this.userName});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,7 +93,7 @@ class _AddItemFormState extends State<AddItemForm> {
           'name': assignedPerson,
           'fechaI': startDate,
           'fechaF': endDate,
-          'status': status,  // Use the selected status
+          'status': status, // Use the selected status
           'seguimiento': tracking,
           'comentario': comments,
           'fecha': DateTime.now().toString(),
@@ -454,6 +458,8 @@ class _AddItemFormState extends State<AddItemForm> {
                 comments: comments,
                 imageData: _capturedImageData,
               );
+              print(UserIdSingleton.userId);
+              print(UserIdSingleton.userName);
 
               _themeController.clear();
               _descriptionController.clear();
@@ -492,10 +498,4 @@ class _AddItemFormState extends State<AddItemForm> {
       ],
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: AddItemPage(),
-  ));
 }
