@@ -89,6 +89,53 @@ class _LoginScreenState extends State<LoginScreen> {
   int? userId;
 
   bool isPasswordVisible = false;
+  Future<void> _resetPassword(BuildContext context) async {
+    final email = userController.text;
+
+    if (email.isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Por favor, ingresa tu usuario",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 5,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    var url = Uri.parse('https://pruebas.septlaxcala.gob.mx/app/resetPassword.php');
+    var data = {
+      'email': email,
+    };
+
+    var response = await http.post(url, body: data);
+
+    if (response.statusCode == 200) {
+      var result = json.decode(response.body);
+      if (result['success']) {
+        Fluttertoast.showToast(
+          msg: "Se ha enviado un enlace de recuperación a tu correo",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Error al enviar el enlace de recuperación. Por favor, intenta de nuevo.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } else {
+      print('Error: ${response.statusCode}');
+    }
+  }
 
   Future<void> _login(BuildContext context) async {
     if (userController.text.isEmpty || passwordController.text.isEmpty) {
@@ -239,19 +286,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 22.0),
-                  // InkWell(
-                  //   onTap: () {
-                  //     print("Forgot Password tapped");
-                  //   },
-                  //   child: Text(
-                  //     "¿Olvidaste tu contraseña?",
-                  //     style: TextStyle(
-                  //       fontSize: 18.0,
-                  //       color: Color(0xFF572772),
-                  //       decoration: TextDecoration.underline,
-                  //     ),
-                  //   ),
-                  // ),
+                  InkWell(
+                    onTap: () {
+                      _resetPassword(context);
+                    },
+                    child: Text(
+                      "¿Olvidaste tu contraseña?",
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        color: Color(0xFF572772),
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
