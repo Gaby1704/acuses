@@ -262,7 +262,15 @@ class SearchView extends StatelessWidget {
               onPressed: () {
                 onClearFilters();
               },
-              child: Text("Borrar Filtro"),
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xFF572772),
+              ),
+              child: Text(
+                "Borrar Filtro",
+                style: TextStyle(
+                  color: Colors.white,  // Set the text color
+                ),
+              ),
             ),
           ],
         )
