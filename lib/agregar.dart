@@ -97,7 +97,7 @@ class _AddItemFormState extends State<AddItemForm> {
           'seguimiento': tracking,
           'comentario': comments,
           'fecha': DateTime.now().toString(),
-          'idUser': UserIdSingleton.userId,
+          'idUser':  UserIdSingleton.userId.toString(),
           'archivo': base64Image,
         },
       );
