@@ -286,19 +286,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 22.0),
-                  InkWell(
-                    onTap: () {
-                      _resetPassword(context);
-                    },
-                    child: Text(
-                      "¿Olvidaste tu contraseña?",
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        color: Color(0xFF572772),
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
+                  // InkWell(
+                  //   onTap: () {
+                  //     _resetPassword(context);
+                  //   },
+                  //   child: Text(
+                  //     "¿Olvidaste tu contraseña?",
+                  //     style: TextStyle(
+                  //       fontSize: 18.0,
+                  //       color: Color(0xFF572772),
+                  //       decoration: TextDecoration.underline,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
