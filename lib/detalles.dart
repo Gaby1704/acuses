@@ -3,10 +3,10 @@ import 'package:acuses/edit.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:acuses/edit.dart';
+import 'inicio.dart';
 
 class DetalleItemPage extends StatelessWidget {
-  final String item;
-
+  final SedeModel item;
   DetalleItemPage({required this.item});
 
   Future<Map<String, dynamic>> fetchDetailsFromWebService(String itemName) async {
@@ -48,7 +48,7 @@ class DetalleItemPage extends StatelessWidget {
         backgroundColor: Color(0xFF572772),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
-        future: fetchDetailsFromWebService(item),
+        future: fetchDetailsFromWebService(item.sede),
         builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());

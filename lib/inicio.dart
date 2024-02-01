@@ -1,10 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:acuses/detalles.dart';
 import 'package:acuses/agregar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
+
+class SedeModel {
+  final String sede;
+  final String estado;
+
+  SedeModel({required this.sede, required this.estado});
+}
 
 class InterInicio extends StatelessWidget {
   final String userName;
@@ -31,9 +38,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<String> items = [];
-  List<String> filteredItems = [];
+  List<SedeModel> items = [];
+  List<SedeModel> filteredItems = [];
+  List<String> estados = [];
   TextEditingController filterController = TextEditingController();
+  String? selectedEstado;  // Add this line to declare selectedEstado
 
   @override
   void initState() {
@@ -42,24 +51,35 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void fetchDataFromWebService() async {
-    final response = await http
-        .get(Uri.parse('https://pruebas.septlaxcala.gob.mx/app/Fpruebas.php'));
+    final response = await http.get(Uri.parse('https://pruebas.septlaxcala.gob.mx/app/Fpruebas.php'));
 
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
-        setState(() {
-          items =
-              List<String>.from(json.decode(utf8.decode(response.bodyBytes)));
-          filteredItems = List.from(items);
-          print(UserIdSingleton.userName);
-          print(UserIdSingleton.userId);
-        });
+        final responseData = json.decode(utf8.decode(response.bodyBytes));
+        print(responseData);
+        if (responseData['sedes'] != null) {
+          setState(() {
+            List<String> sedes = List<String>.from(responseData['sedes']);
+            List<String> estados = List<String>.from(responseData['estado']);
+
+            if (sedes.length == estados.length) {
+              items = List.generate(sedes.length, (index) => SedeModel(sede: sedes[index], estado: estados[index]));
+              filteredItems = List.from(items);
+              this.estados = estados.toSet().toList(); // Remove duplicates and set to states
+            } else {
+              print('Error: Mismatch in the number of sedes and estados.');
+            }
+            filteredItems = List.from(items);
+          });
+        } else {
+          print('Data field is null in the response.');
+        }
       } else {
-        print('Respuesta del servidor vacía.');
+        print('Server response is empty.');
       }
     } else {
-      print('Error en la solicitud: ${response.statusCode}');
-      print('Detalles del error: ${response.body}');
+      print('Error in the request: ${response.statusCode}');
+      print('Error details: ${response.body}');
     }
   }
 
@@ -67,12 +87,21 @@ class _MyHomePageState extends State<MyHomePage> {
     if (input.isEmpty) return input;
     return input[0].toUpperCase() + input.substring(1).toLowerCase();
   }
+  void _applyFilterByEstado(String? selectedEstado) {
+    setState(() {
+      this.selectedEstado = selectedEstado;
+      _applyFilter();
+    });
+  }
 
   void _applyFilter() {
-    String filter = filterController.text.toLowerCase();
     setState(() {
-      filteredItems =
-          items.where((item) => item.toLowerCase().contains(filter)).toList();
+      filteredItems = items
+          .where((item) =>
+      (selectedEstado == null || item.estado.toLowerCase() == selectedEstado?.toLowerCase()) &&
+          (item.sede.toLowerCase().contains(filterController.text.toLowerCase()) ||
+              item.estado.toLowerCase().contains(filterController.text.toLowerCase())))
+          .toList();
     });
   }
 
@@ -90,16 +119,14 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
         ],
-        title: Text("¡Hola ${widget.userName}!",
-            style: TextStyle(color: Colors.white)),
+        title: Text("¡Hola ${widget.userName}!", style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF572772),
         elevation: 0,
       ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-                "assets/fondoInicio.png"), // Replace with your image asset path
+            image: AssetImage("assets/fondoInicio.png"),
             fit: BoxFit.cover,
           ),
         ),
@@ -110,8 +137,12 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 children: [
                   SearchView(
-                      filterController: filterController,
-                      onFilter: _applyFilter),
+                    filterController: filterController,
+                    onFilter: _applyFilter,
+                    estados: estados,
+                    onFilterByEstado: _applyFilterByEstado,
+                    selectedEstado: selectedEstado, // Make sure this line is there
+                  ),
                 ],
               ),
             ),
@@ -124,8 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              DetalleItemPage(item: filteredItems[index]),
+                          builder: (context) => DetalleItemPage(item: filteredItems[index]),
                         ),
                       );
                     },
@@ -134,7 +164,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         Icons.check_circle_outline,
                         color: Color(0xFF572772),
                       ),
-                      title: Text(_capitalizeFirstLetter(filteredItems[index])),
+                      title: Text(_capitalizeFirstLetter(filteredItems[index].sede)),
+                      subtitle: Text(_capitalizeFirstLetter(filteredItems[index].estado)),
                       trailing: Icon(
                         Icons.arrow_forward_ios,
                         color: Color(0xFF572772),
@@ -152,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddItemPage(userId: UserIdSingleton.userId, userName: UserIdSingleton.userName,),
+              builder: (context) => AddItemPage(userId: UserIdSingleton.userId, userName: UserIdSingleton.userName),
             ),
           );
         },
@@ -165,33 +196,85 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
 class SearchView extends StatelessWidget {
   final TextEditingController filterController;
   final Function onFilter;
+  final List<String> estados;
+  final Function onFilterByEstado;
+  final String? selectedEstado;
 
-  SearchView({required this.filterController, required this.onFilter});
+  SearchView({
+    required this.filterController,
+    required this.onFilter,
+    required this.estados,
+    required this.onFilterByEstado,
+    required this.selectedEstado,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: TextField(
-            controller: filterController,
-            onChanged: (value) => onFilter(),
-            decoration: InputDecoration(
-              hintText: "Buscar",
-              filled: true,
-              fillColor: Colors.grey[300],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: filterController,
+                onChanged: (value) => onFilter(),
+                decoration: InputDecoration(
+                  hintText: "Buscar",
+                  filled: true,
+                  fillColor: Colors.grey[300],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
+        SizedBox(height: 10),
+        Row(
+          children: [
+            Text("Filtrar estado:"),
+            SizedBox(width: 10),
+            Expanded(
+              child: DropdownButton<String>(
+                value: selectedEstado,
+                onChanged: (String? newSelectedEstado) {
+                  onFilterByEstado(newSelectedEstado);
+                },
+                items: estados.map<DropdownMenuItem<String>>((String estado) {
+                  return DropdownMenuItem<String>(
+                    value: estado,
+                    child: Row(
+                      children: [
+                        SizedBox(width: 10),
+                        Text(estado),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            SizedBox(width: 10),
+            ElevatedButton(
+              onPressed: () {
+                onClearFilters();
+              },
+              child: Text("Borrar Filtro"),
+            ),
+          ],
+        )
+
       ],
     );
+  }
+
+  void onClearFilters() {
+    filterController.clear();
+    onFilterByEstado(null);
+    onFilter();
   }
 }
 
@@ -202,6 +285,7 @@ void _logout(BuildContext context) async {
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(
-        builder: (context) => LoginScreen(onLogin: (userId, userName) {})),
+      builder: (context) => LoginScreen(onLogin: (userId, userName) {}),
+    ),
   );
 }

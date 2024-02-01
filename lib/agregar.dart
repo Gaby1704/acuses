@@ -93,7 +93,7 @@ class _AddItemFormState extends State<AddItemForm> {
           'name': assignedPerson,
           'fechaI': startDate,
           'fechaF': endDate,
-          'status': status, // Use the selected status
+          'status': status,
           'seguimiento': tracking,
           'comentario': comments,
           'fecha': DateTime.now().toString(),
