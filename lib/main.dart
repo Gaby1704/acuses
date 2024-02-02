@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
       var result = json.decode(response.body);
       if (result['success']) {
         Fluttertoast.showToast(
-          msg: "Se ha enviado un enlace de recuperación a tu correo",
+          msg: "Se ha enviado tu contraseña a tu correo",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 5,
